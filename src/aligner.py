@@ -149,7 +149,7 @@ class FeatureExtractor:
             max_features=2000,
             im_rescale_factor=0.75,
             mask_smoothing_it=5,
-            camera_info_size=50
+            camera_info_size=50,
     ):
         self.max_features = max_features
         self.mask_smoothing_it = mask_smoothing_it

@@ -2,7 +2,13 @@
 images: ''
 
 # Path to corresponding folder of density maps (pengbot output)
+# Either densities or locations are required
 densities: ''
+
+# Path to CSV file with x,y bird locations for all images in a camera folder
+# Expected to have columns "cluster_x", "cluster_y", "image_id"
+# Either densities or locations are required
+locations: ''
 
 # Path to png file with diagram of nests
 nest_diagram: ''
@@ -11,7 +17,11 @@ nest_diagram: ''
 nest_reference_image: ''
 
 # Path to density map of reference image
+# Not needed when locations are provided
 nest_reference_density: ''
 
-# Attempt to fill diagrams for images for which direct computation failed
+# Attempt to fill nest diagrams for images for which alignment failed
 fill_missing: True
+
+# Width in pixels of the camera information bands 
+camera_info_size: 50

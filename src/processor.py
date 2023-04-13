@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 import cv2
 from . import utils, aligner
@@ -14,21 +15,27 @@ class FolderProcessor:
     def __init__(
             self,
             images_dir,
-            densities_dir,
+            densities_dir=None,
+            locations_path=None,
             im_ext='.JPG',
             density_ext='.mat',
             camera_info_size=50,
+            bounding_box_size=100,
             fill_missing=True
     ):
         self.images_dir = images_dir
         self.densities_dir = densities_dir
+        self.locations_path = locations_path
         self.output_dir = images_dir + '_nest_diagrams'
         self.im_unit_cache = utils.ImCache()
         self.im_ext = im_ext
         self.density_ext = density_ext
         self.images = self.parse_dir(images_dir, ext=im_ext)
-        self.densities = self.parse_dir(densities_dir, ext=density_ext)
+        self.densities = self.parse_dir(densities_dir, ext=density_ext) if densities_dir is not None else None
+        self.locations = self.parse_locations(locations_path) if locations_path is not None else None
         self.im_unit_cache = utils.ImCache(cache_size=6)
+        self.camera_info_size = camera_info_size
+        self.bounding_box_size = bounding_box_size
         self.aligner = aligner.Aligner()
         self.feature_extractor = aligner.FeatureExtractor(
             im_rescale_factor=0.75,
@@ -51,11 +58,14 @@ class FolderProcessor:
                 tqdm.write(f'Output for {im_name} exists. Skipping...')
                 continue
             target_im_path = os.path.join(self.images_dir, im_name)
-            target_density_path = os.path.join(self.densities_dir, im_name.replace(self.im_ext, self.density_ext))
+            if self.densities_dir is not None:
+                target_density_path = os.path.join(self.densities_dir, im_name.replace(self.im_ext, self.density_ext))
+            else:
+                target_density_path = None
 
             target_unit = self.im_unit_from_paths(
                 im_path=target_im_path,
-                density_path=target_density_path,
+                density_path=target_density_path if target_density_path is not None else None,
             )
 
             target_unit = self.feature_extractor(target_unit)
@@ -115,14 +125,28 @@ class FolderProcessor:
             im_unit = self.feature_extractor(im_unit)
         self.im_unit_cache.insert(im_unit)
 
-    def im_unit_from_paths(self, im_path, density_path, diagram_path=None):
+    def im_unit_from_paths(self, im_path, density_path=None, diagram_path=None):
+        im_name = os.path.basename(im_path)
+        im = utils.load_image(im_path)
+        diagram = utils.load_image(diagram_path) if diagram_path is not None else None
+        if density_path is not None:
+            density = utils.load_density(density_path)
+        else:
+            # Make mask from locations
+            density = utils.make_density_from_locations(
+                xy=utils.load_locations(self.locations, im_name),
+                im_shape=im.shape[:2],
+                bb_size=self.bounding_box_size,
+            )
+
         im_unit = utils.ImUnit(
-            im=utils.load_image(im_path),
-            density=utils.load_density(density_path),
-            diagram=utils.load_image(diagram_path) if diagram_path is not None else None,
+            im=im, 
+            density=density,
+            diagram=diagram,
             key_points=None,
             descriptors=None,
-            name=im_path
+            name=im_name,
+            path=im_path
         )
         return im_unit
 
@@ -132,11 +156,25 @@ class FolderProcessor:
         Extract list of files with a given extension
         """
         return sorted([f for f in os.listdir(directory) if f.endswith(ext)])
+    
+    @staticmethod
+    def parse_locations(locations_path):
+        """
+        Parse CSV with image locations
+        """
+        locations = pd.read_csv(
+            locations_path, 
+            usecols=[ 'image_id', 'cluster_x', 'cluster_y']
+            )
+        return locations
 
     def __repr__(self):
         r = '\n === Folder Processor === \n'
         r += f'Images: {len(self.images)} in {self.images_dir} \n'
-        r += f'Densities: {len(self.densities)} in {self.densities_dir} \n'
+        if self.densities_dir is not None:
+            r += f'Densities: {len(self.densities)} in {self.densities_dir} \n'
+        if self.locations is not None:
+            r += f'Locations: {len(self.locations)} in {self.locations_path} \n'
         r += f'Image cache size: {self.im_unit_cache.cache_size} image units \n'
         # r += f'Nest diagram: {self.nest_reference_diagram} \n'
         # r += f'Nest reference images: {self.nest_reference_image} \n'
