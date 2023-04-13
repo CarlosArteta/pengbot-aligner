@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Testing / Formatting / Linting / Coverage / Docs
+.tox/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+coverage.xml
+/doc/output/
+/doc/source/
+/junit/
+
+# PyCharm project files / Virtual environments
+.idea/
+venv/
+.venv/
+.python-version
+
