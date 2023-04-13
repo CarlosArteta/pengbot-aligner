@@ -48,7 +48,7 @@ class FolderProcessor:
             output_fn = im_name.replace(self.im_ext, '.png')
             output_fp = os.path.join(self.output_dir, output_fn)
             if os.path.exists(output_fp):
-                print(f'{output_fp} already exists. Skipping...')
+                tqdm.write(f'Output for {im_name} exists. Skipping...')
                 continue
             target_im_path = os.path.join(self.images_dir, im_name)
             target_density_path = os.path.join(self.densities_dir, im_name.replace(self.im_ext, self.density_ext))
@@ -76,7 +76,7 @@ class FolderProcessor:
                     break
 
             if h_matrix is None:
-                print(f'Homography could not be computed for {im_name}')
+                tqdm.write(f'Homography could not be computed for {im_name}')
                 self.diagrams_to_fill.append(im_name)
                 continue
 
