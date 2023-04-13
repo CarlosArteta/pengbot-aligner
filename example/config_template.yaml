@@ -1,0 +1,17 @@
+# Path to camera folder (pengbot JPG input images)
+images: ''
+
+# Path to corresponding folder of density maps (pengbot output)
+densities: ''
+
+# Path to png file with diagram of nests
+nest_diagram: ''
+
+# Path to reference image where nest diagram was drawn
+nest_reference_image: ''
+
+# Path to density map of reference image
+nest_reference_density: ''
+
+# Attempt to fill diagrams for images for which direct computation failed
+fill_missing: True
