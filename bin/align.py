@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 import os
 import argparse
 import yaml
-from . import processor
+from src import processor
 
 
 def parse_cli_args():
