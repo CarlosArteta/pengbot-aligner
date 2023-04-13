@@ -1,7 +1,7 @@
 import os
 import argparse
-import processor
 import yaml
+from . import processor
 
 
 def parse_cli_args():

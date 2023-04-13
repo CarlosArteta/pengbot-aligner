@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-import utils
+from . import utils
 
 
 class Aligner:

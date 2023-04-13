@@ -1,10 +1,8 @@
 import os
-import aligner
 import numpy as np
 from tqdm import tqdm
-from scipy.io import loadmat
 import cv2
-import utils
+from . import utils, aligner
 
 
 class FolderProcessor:
@@ -31,12 +29,11 @@ class FolderProcessor:
         self.images = self.parse_dir(images_dir, ext=im_ext)
         self.densities = self.parse_dir(densities_dir, ext=density_ext)
         self.im_unit_cache = utils.ImCache(cache_size=6)
+        self.aligner = aligner.Aligner()
         self.feature_extractor = aligner.FeatureExtractor(
             im_rescale_factor=0.75,
             camera_info_size=camera_info_size
         )
-        self.aligner = aligner.Aligner()
-        self.feature_extractor = aligner.FeatureExtractor()
         self.diagrams_to_fill = []
         self.latest_h_matrix = np.nan
         self.fill_missing = fill_missing
@@ -56,7 +53,6 @@ class FolderProcessor:
             target_unit = self.im_unit_from_paths(
                 im_path=target_im_path,
                 density_path=target_density_path,
-                diagram_path=''
             )
 
             target_unit = self.feature_extractor(target_unit)
@@ -116,29 +112,14 @@ class FolderProcessor:
 
     def im_unit_from_paths(self, im_path, density_path, diagram_path):
         im_unit = utils.ImUnit(
-            im=self.load_image(im_path),
-            density=self.load_density(density_path),
-            diagram=self.load_image(diagram_path),
+            im=utils.load_image(im_path),
+            density=utils.load_density(density_path),
+            diagram=utils.load_image(diagram_path),
             key_points=None,
             descriptors=None,
             name=im_path
         )
         return im_unit
-
-    @staticmethod
-    def load_image(im_fp):
-        if os.path.exists(im_fp):
-            return cv2.imread(im_fp)
-        else:
-            return None
-
-    @staticmethod
-    def load_density(density_fp):
-        if os.path.exists(density_fp):
-            data = loadmat(density_fp)
-            return data['density']
-        else:
-            return None
 
     @staticmethod
     def parse_dir(directory, ext):
