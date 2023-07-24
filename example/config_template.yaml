@@ -1,24 +1,37 @@
-# Path to camera folder (pengbot JPG input images)
-images: ''
+# pengbot-aligner config file template
 
-# Path to corresponding folder of density maps (pengbot output)
-# Either densities or locations are required
-densities: ''
+# Images, densities, nests and metadata are expected to be under the path
+# {root_path}/{camera_name}/
 
-# Path to CSV file with x,y bird locations for all images in a camera folder
-# Expected to have columns "cluster_x", "cluster_y", "image_id"
-# Either densities or locations are required
-locations: ''
+# This path is expected to contain the folowing folders:
+# - '{camera_name}_renamed' containing images with .JPG extesion (required)
+# - '{camera_name}_pengbot' containing density maps with .mat extension (optional)
+# - '{camera_name}_locations' containing x,y locations with .png extension (optional)
+# - '{camera_name}_metadata' containing metadata with .csv extension (optional)
+# A folder with nest diagrams, {camera_name}_nests, will be created automatically
+root_path: ''  # e.g. 'C:\Penguinwatch_Timelapse'
+camera_name: '' # e.g. 'AITCb'
 
-# Path to png file with diagram of nests
+# The images and density maps folder are expected to be organized by camera collection, e.g., AITCb2014b
+# which is {camera_name}{camera_collection_id}
+camera_collection_id: ''  # e.g. 2014b
+
+# Images are expected to be named {camera_name}{camera_collection_id}_{image_id}.JPG
+# Density maps are expected to be named {camera_name}{camera_collection_id}_{image_id}.mat
+# Metadata files are expected to be named {camera_name}{camera_collection_id}_metadata.csv
+# Location CSV files are expected to have columns "cluster_x", "cluster_y", "image_id"
+# This is needed when density maps are not available
+# If provided, locations are used instead of density maps as masks for image alignment
+
+# Full path to png file with diagram of nests
 nest_diagram: ''
 
-# Path to reference image where nest diagram was drawn
-nest_reference_image: ''
+# ID of reference image where nest diagram was drawn
+nest_reference_image_id: '' # e.g. 0001
 
-# Path to density map of reference image
-# Not needed when locations are provided
-nest_reference_density: ''
+# Only process certain months in the camera collection
+# If empty, all months are processed
+months_to_process: [] # e.g. [1, 2, 3]
 
 # Attempt to fill nest diagrams for images for which alignment failed
 fill_missing: True
