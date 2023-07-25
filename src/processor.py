@@ -26,7 +26,7 @@ class FolderProcessor:
         self.images_dir = images_dir
         self.densities_dir = densities_dir
         self.locations_path = locations_path
-        self.output_dir = images_dir + '_nest_diagrams'
+        self.output_dir = images_dir.replace('renamed', 'nests')
         self.im_unit_cache = utils.ImCache()
         self.im_ext = im_ext
         self.density_ext = density_ext
@@ -48,8 +48,7 @@ class FolderProcessor:
         self.filling_tolerance_translation = 5
 
     def process_folder(self):
-        if not os.path.exists(self.output_dir):
-            os.mkdir(self.output_dir)
+        os.makedirs(self.output_dir, exist_ok=True)
 
         for im_name in tqdm(self.images):
             output_fn = im_name.replace(self.im_ext, '.png')
