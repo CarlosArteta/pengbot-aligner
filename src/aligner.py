@@ -88,9 +88,10 @@ class Aligner:
     def warp_diagram(diagram, h_matrix):
         ref_shape = diagram.shape[:2][::-1]
         warped_diagram = cv2.warpPerspective(
-            diagram,
-            np.linalg.inv(h_matrix),
-            ref_shape
+            src=diagram,
+            M=np.linalg.inv(h_matrix),
+            dsize=ref_shape,
+            flags=cv2.INTER_NEAREST,
         )
         return warped_diagram
 
