@@ -38,3 +38,6 @@ fill_missing: True
 
 # Width in pixels of the camera information bands 
 camera_info_size: 50
+
+# Interactive mode shows the images and allows to manually accept or reject the alignment
+interactive: True

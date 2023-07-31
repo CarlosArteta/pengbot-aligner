@@ -120,6 +120,10 @@ def parse_cli_args():
         warnings.warn("'camera_info_size' not specified, defaulting to 50", UserWarning)
         config['camera_info_size'] = 50
 
+    if 'interactive' not in config:
+        config['interactive'] = False
+    
+
     config['images'] = images_path
     config['densities'] = densities_path
     config['locations'] = locations_path
@@ -141,7 +145,8 @@ def main():
         locations_path=config['locations'],
         bounding_box_size=config['location_mask_size'],
         camera_info_size=config['camera_info_size'],
-        fill_missing=config['fill_missing']
+        fill_missing=config['fill_missing'],
+        interactive=config['interactive']
     )
 
     ref_im_unit = folder_processor.im_unit_from_paths(

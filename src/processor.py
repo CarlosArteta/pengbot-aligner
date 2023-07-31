@@ -3,7 +3,10 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import cv2
+import tkinter as tk
+from PIL import ImageTk, Image
 from . import utils, aligner
+
 
 
 class FolderProcessor:
@@ -21,7 +24,8 @@ class FolderProcessor:
             density_ext='.mat',
             camera_info_size=50,
             bounding_box_size=100,
-            fill_missing=True
+            fill_missing=True,
+            interactive=False
     ):
         self.images_dir = images_dir
         self.densities_dir = densities_dir
@@ -46,6 +50,7 @@ class FolderProcessor:
         self.fill_missing = fill_missing
         self.filling_tolerance_scale = 0.03
         self.filling_tolerance_translation = 5
+        self.interactive = interactive
 
     def process_folder(self):
         os.makedirs(self.output_dir, exist_ok=True)
@@ -86,7 +91,11 @@ class FolderProcessor:
 
             if h_matrix is None:
                 tqdm.write(f'Homography could not be computed for {im_name}')
-                self.diagrams_to_fill.append(im_name)
+                if self.interactive:
+                    action = self.get_user_action(os.path.join(self.images_dir, im_name), ref_unit.diagram)
+                    print(action)
+                else:
+                    self.diagrams_to_fill.append(im_name)
                 continue
 
             # Update aligner to reduce drifting of the scene
@@ -148,6 +157,79 @@ class FolderProcessor:
             path=im_path
         )
         return im_unit
+     
+
+    def get_user_action(self, im_path, diagram):
+        """Get user to input what to do what failed alignments."""
+        action = None
+        def keep_snow():
+            nonlocal action
+            action = 'keep_snow'
+            root.destroy()
+        def keep_other():
+            nonlocal action
+            action = 'keep_other'
+            root.destroy()
+        def skip():
+            nonlocal action
+            action = 'skip'
+            root.destroy()
+        def redraw():
+            nonlocal action
+            action = 'redraw'
+            root.destroy()
+        def key_press(event):
+            key = event.char
+            if key == '1':
+                keep_snow()
+            elif key == '2':
+                keep_other()
+            elif key == '3':
+                skip()
+            elif key == '4':
+                redraw()
+            else:
+                print(f'Key {key} not recognized')             
+        
+        # load image with opencv
+        im = cv2.imread(im_path)
+        
+        # overlay diagram over image with transparency
+        im = cv2.addWeighted(im, 0.75, diagram, 0.25, 0)
+
+        # convert image to RGB format
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+
+        # resize image to fit screen
+        im = cv2.resize(im, (0, 0), fx=0.5, fy=0.5)
+
+        # show using tkinter
+        root = tk.Tk()
+        root.title(im_path)
+        im = Image.fromarray(im)
+        img = ImageTk.PhotoImage(image=im)
+        panel = tk.Label(root, image=img)
+        panel.pack(side="bottom", fill="both", expand="yes")
+
+        # Add buttons 
+        button_frame = tk.Frame(root)
+        button_frame.pack(side="top", fill="both", expand="yes")
+        
+        keep_snow_button = tk.Button(button_frame, text="1) Keep diagram (snow)", command=keep_snow)
+        keep_snow_button.pack(side="left", fill="both", expand="yes")
+        keep_other_button = tk.Button(button_frame, text="2) Keep diagram (other)", command=keep_other)
+        keep_other_button.pack(side="left", fill="both", expand="yes")
+        skip_button = tk.Button(button_frame, text="3) Skip", command=skip)
+        skip_button.pack(side="left", fill="both", expand="yes")
+        redraw_button = tk.Button(button_frame, text="4) Redraw", command=redraw)
+        redraw_button.pack(side="left", fill="both", expand="yes")
+        
+        root.bind('<Key>', key_press) 
+
+        # Display
+        root.mainloop()
+
+        return action
 
     @staticmethod
     def parse_dir(directory, ext):
