@@ -50,6 +50,11 @@ class FolderProcessor:
         self.filling_tolerance_scale = 0.03
         self.filling_tolerance_translation = 5
         self.interactive = interactive
+        self.alignment_record_path = os.path.join(self.output_dir, 'alignment_record.csv')
+        if os.path.exists(self.alignment_record_path):
+            self.alignment_record = pd.read_csv(self.alignment_record_path)
+        else:
+            self.alignment_record = pd.DataFrame(columns=['image', 'alignment'])
 
     def process_folder(self):
         os.makedirs(self.output_dir, exist_ok=True)
@@ -59,6 +64,7 @@ class FolderProcessor:
             output_fp = os.path.join(self.output_dir, output_fn)
             if os.path.exists(output_fp):
                 tqdm.write(f'Output for {im_name} exists. Skipping...')
+                self.update_alignment_record(im_name, 'existed')
                 continue
             target_im_path = os.path.join(self.images_dir, im_name)
             if self.densities_dir is not None:
@@ -79,6 +85,7 @@ class FolderProcessor:
                 if h_matrix is not None:
                     warped_diagram = self.aligner.warp_diagram(ref_unit.diagram, h_matrix)
                     cv2.imwrite(output_fp, warped_diagram)
+                    self.update_alignment_record(im_name, 'auto')
                     target_unit.diagram = warped_diagram
                     if (self.fill_missing and 
                         len(self.diagrams_to_fill) > 0 and 
@@ -92,7 +99,21 @@ class FolderProcessor:
                 tqdm.write(f'Homography could not be computed for {im_name}')
                 if self.interactive:
                     action = self.get_user_action(os.path.join(self.images_dir, im_name), ref_unit.diagram)
-                    print(action)
+                    if action == 'keep_snow':
+                        cv2.imwrite(output_fp, ref_unit.diagram)
+                        self.update_alignment_record(im_name, 'keep_snow')
+                    elif action == 'keep_other':
+                        cv2.imwrite(output_fp, ref_unit.diagram)
+                        self.update_alignment_record(im_name, 'keep_other')
+                    elif action == 'ignore_blurry':
+                        self.update_alignment_record(im_name, 'ignore_blurry')
+                    elif action == 'ignore_other':
+                        self.update_alignment_record(im_name, 'ignore_other')
+                    elif action == 'redraw':
+                        print('Processing stopped to redraw diagram. Please restart processing.')
+                        break
+                    else:
+                        raise ValueError(f'Action {action} not recognized')
                 else:
                     self.diagrams_to_fill.append(im_name)
                 continue
@@ -237,6 +258,15 @@ class FolderProcessor:
         root.mainloop()
 
         return action
+    
+    def update_alignment_record(self, im_name, alignment):
+        if alignment == 'existed' and im_name in self.alignment_record['image'].values:
+            return
+        else:
+            self.alignment_record = pd.concat(
+                [self.alignment_record, pd.DataFrame({'image': im_name, 'alignment': alignment}, index=[0])], 
+                ).reset_index(drop=True)
+            self.alignment_record.to_csv(self.alignment_record_path, index=False)
 
     @staticmethod
     def parse_dir(directory, ext):
