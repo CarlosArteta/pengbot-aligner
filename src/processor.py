@@ -14,7 +14,6 @@ class FolderProcessor:
     Class to process a folder with images such that a nest diagram is created for each of the images resulting
     from wrapping a given nest diagram using an alignment computed on pairs of images.
     """
-
     def __init__(
             self,
             images_dir,
@@ -170,9 +169,13 @@ class FolderProcessor:
             nonlocal action
             action = 'keep_other'
             root.destroy()
-        def skip():
+        def ignore_blurry():
             nonlocal action
-            action = 'skip'
+            action = 'ignore_blurry'
+            root.destroy()
+        def ignore_other():
+            nonlocal action
+            action = 'ignore_other'
             root.destroy()
         def redraw():
             nonlocal action
@@ -180,13 +183,15 @@ class FolderProcessor:
             root.destroy()
         def key_press(event):
             key = event.char
-            if key == '1':
+            if key == 's':
                 keep_snow()
-            elif key == '2':
+            elif key == 'o':
                 keep_other()
-            elif key == '3':
-                skip()
-            elif key == '4':
+            elif key == 'b':
+                ignore_blurry()
+            elif key == 'i':
+                ignore_other()
+            elif key == 'r':
                 redraw()
             else:
                 print(f'Key {key} not recognized')             
@@ -215,13 +220,15 @@ class FolderProcessor:
         button_frame = tk.Frame(root)
         button_frame.pack(side="top", fill="both", expand="yes")
         
-        keep_snow_button = tk.Button(button_frame, text="1) Keep diagram (snow)", command=keep_snow)
+        keep_snow_button = tk.Button(button_frame, text="(s) Keep diagram (snow)", command=keep_snow)
         keep_snow_button.pack(side="left", fill="both", expand="yes")
-        keep_other_button = tk.Button(button_frame, text="2) Keep diagram (other)", command=keep_other)
+        keep_other_button = tk.Button(button_frame, text="(o) Keep diagram (other)", command=keep_other)
         keep_other_button.pack(side="left", fill="both", expand="yes")
-        skip_button = tk.Button(button_frame, text="3) Skip", command=skip)
-        skip_button.pack(side="left", fill="both", expand="yes")
-        redraw_button = tk.Button(button_frame, text="4) Redraw", command=redraw)
+        ignore_blurry_button = tk.Button(button_frame, text="(b) Ignore (blurry)", command=ignore_blurry)
+        ignore_blurry_button.pack(side="left", fill="both", expand="yes")
+        ignore_other_button = tk.Button(button_frame, text="(i) Ignore (other)", command=ignore_other)
+        ignore_other_button.pack(side="left", fill="both", expand="yes")
+        redraw_button = tk.Button(button_frame, text="(r) Redraw", command=redraw)
         redraw_button.pack(side="left", fill="both", expand="yes")
         
         root.bind('<Key>', key_press) 
