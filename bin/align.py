@@ -24,8 +24,8 @@ def parse_cli_args():
         config = yaml.safe_load(config_fp)
 
     # Validate arguments
-    if 'root_path' not in config:
-        raise ValueError("'root_path' must be specified")
+    if 'root_dir' not in config:
+        raise ValueError("'root_dir' must be specified")
     
     if 'camera_name' not in config:
         raise ValueError("'camera_name' must be specified")
@@ -33,12 +33,12 @@ def parse_cli_args():
     if 'camera_collection_id' not in config:
         raise ValueError("'camera_collection_id' must be specified")
     
-    root_path = config['root_path']
+    root_dir = config['root_dir']
     camera_name = config['camera_name']
     camera_collection_id = config['camera_collection_id']
 
     images_path = os.path.join(
-        root_path, 
+        root_dir, 
         camera_name, 
         f'{camera_name}_renamed', 
         f'{camera_name}{camera_collection_id}_renamed'
@@ -48,7 +48,7 @@ def parse_cli_args():
         raise ValueError(f"{images_path} does not exist")
 
     densities_path = os.path.join(
-        root_path, 
+        root_dir, 
         camera_name, 
         f'{camera_name}_pengbot', 
         f'{camera_name}{camera_collection_id}_pengbot'
@@ -57,7 +57,7 @@ def parse_cli_args():
     if not os.path.exists(densities_path):
         densities_path = None
         locations_path = os.path.join(
-                root_path, 
+                root_dir, 
                 camera_name, 
                 f'{camera_name}_metadata', 
                 f'{camera_name}{camera_collection_id}_locations.csv'
@@ -72,7 +72,7 @@ def parse_cli_args():
         location_mask_size = None
 
     metadata_path = os.path.join(
-        root_path, 
+        root_dir, 
         camera_name, 
         f'{camera_name}_metadata', 
         f'{camera_name}{camera_collection_id}_metadata'
