@@ -1,4 +1,5 @@
 import os
+import yaml
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -24,7 +25,8 @@ class FolderProcessor:
             camera_info_size=50,
             bounding_box_size=100,
             fill_missing=True,
-            interactive=False
+            interactive=False,
+            config_path=None
     ):
         self.images_dir = images_dir
         self.densities_dir = densities_dir
@@ -55,6 +57,7 @@ class FolderProcessor:
             self.alignment_record = pd.read_csv(self.alignment_record_path)
         else:
             self.alignment_record = pd.DataFrame(columns=['image', 'alignment'])
+        self.config_path = config_path
 
     def process_folder(self):
         os.makedirs(self.output_dir, exist_ok=True)
@@ -110,7 +113,8 @@ class FolderProcessor:
                     elif action == 'ignore_other':
                         self.update_alignment_record(im_name, 'ignore_other')
                     elif action == 'redraw':
-                        print('Processing stopped to redraw diagram. Please restart processing.')
+                        redraw_config_path = self.make_redraw_config_file(im_name)
+                        print(f'Processing stopped to redraw diagram. Config file created at {redraw_config_path}')
                         break
                     else:
                         raise ValueError(f'Action {action} not recognized')
@@ -267,6 +271,24 @@ class FolderProcessor:
                 [self.alignment_record, pd.DataFrame({'image': im_name, 'alignment': alignment}, index=[0])], 
                 ).reset_index(drop=True)
             self.alignment_record.to_csv(self.alignment_record_path, index=False)
+
+    def make_redraw_config_file(self, im_name):
+        """
+        Make config file to redraw a diagram
+        """
+        redraw_config_path = os.path.join(os.path.dirname(self.config_path), f'config_{im_name.replace(self.im_ext, ".yaml")}')
+        if os.path.exists(redraw_config_path):
+            raise ValueError(f'Config file {redraw_config_path} already exists')
+        else:
+            with open(self.config_path, 'r') as config_path:
+                config = yaml.safe_load(config_path)
+            config['nest_diagram'] = os.path.join(self.output_dir, im_name.replace(self.im_ext, '.png'))
+            config['nest_reference_image_id'] = im_name.replace(self.im_ext, '').split('_')[-1]
+            with open(redraw_config_path, 'w') as redraw_config_path:
+                yaml.dump(config, redraw_config_path)
+        return redraw_config_path
+
+
 
     @staticmethod
     def parse_dir(directory, ext):

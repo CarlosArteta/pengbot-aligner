@@ -18,9 +18,9 @@ def parse_cli_args():
         help='YAML file with the required paths'
     )
 
-    config = parser.parse_args()
+    config_arg = parser.parse_args()
 
-    with open(config.config, 'r') as config_fp:
+    with open(config_arg.config, 'r') as config_fp:
         config = yaml.safe_load(config_fp)
 
     # Validate arguments
@@ -123,7 +123,7 @@ def parse_cli_args():
     if 'interactive' not in config:
         config['interactive'] = False
     
-
+    config['config_path'] = config_arg.config
     config['images'] = images_path
     config['densities'] = densities_path
     config['locations'] = locations_path
@@ -146,7 +146,8 @@ def main():
         bounding_box_size=config['location_mask_size'],
         camera_info_size=config['camera_info_size'],
         fill_missing=config['fill_missing'],
-        interactive=config['interactive']
+        interactive=config['interactive'],
+        config_path=config['config_path']
     )
 
     ref_im_unit = folder_processor.im_unit_from_paths(
