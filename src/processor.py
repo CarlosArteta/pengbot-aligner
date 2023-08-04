@@ -109,8 +109,12 @@ class FolderProcessor:
                         cv2.imwrite(output_fp, ref_unit.diagram)
                         self.update_alignment_record(im_name, 'keep_other')
                     elif action == 'ignore_blurry':
+                        blank_diagram = np.zeros_like(ref_unit.diagram)
+                        cv2.imwrite(output_fp, blank_diagram)
                         self.update_alignment_record(im_name, 'ignore_blurry')
                     elif action == 'ignore_other':
+                        blank_diagram = np.zeros_like(ref_unit.diagram)
+                        cv2.imwrite(output_fp, blank_diagram)
                         self.update_alignment_record(im_name, 'ignore_other')
                     elif action == 'redraw':
                         redraw_config_path = self.make_redraw_config_file(im_name)
