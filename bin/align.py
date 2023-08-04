@@ -59,7 +59,7 @@ def parse_cli_args():
         locations_path = os.path.join(
                 root_dir, 
                 camera_name, 
-                f'{camera_name}_metadata', 
+                f'{camera_name}_locations', 
                 f'{camera_name}{camera_collection_id}_locations.csv'
             )
         if not os.path.exists(locations_path):
