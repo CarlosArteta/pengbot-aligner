@@ -114,7 +114,7 @@ class FolderProcessor:
                         self.update_alignment_record(im_name, 'ignore_other')
                     elif action == 'redraw':
                         redraw_config_path = self.make_redraw_config_file(im_name)
-                        print(f'Processing stopped to redraw diagram. Config file created at {redraw_config_path}')
+                        print(f'\n Processing stopped to redraw diagram. Config file created at {redraw_config_path.name}')
                         break
                     else:
                         raise ValueError(f'Action {action} not recognized')
