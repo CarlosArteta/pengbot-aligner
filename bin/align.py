@@ -18,14 +18,14 @@ def parse_cli_args():
         help='YAML file with the required paths'
     )
 
-    config = parser.parse_args()
+    config_arg = parser.parse_args()
 
-    with open(config.config, 'r') as config_fp:
+    with open(config_arg.config, 'r') as config_fp:
         config = yaml.safe_load(config_fp)
 
     # Validate arguments
-    if 'root_path' not in config:
-        raise ValueError("'root_path' must be specified")
+    if 'root_dir' not in config:
+        raise ValueError("'root_dir' must be specified")
     
     if 'camera_name' not in config:
         raise ValueError("'camera_name' must be specified")
@@ -33,12 +33,12 @@ def parse_cli_args():
     if 'camera_collection_id' not in config:
         raise ValueError("'camera_collection_id' must be specified")
     
-    root_path = config['root_path']
+    root_dir = config['root_dir']
     camera_name = config['camera_name']
     camera_collection_id = config['camera_collection_id']
 
     images_path = os.path.join(
-        root_path, 
+        root_dir, 
         camera_name, 
         f'{camera_name}_renamed', 
         f'{camera_name}{camera_collection_id}_renamed'
@@ -48,7 +48,7 @@ def parse_cli_args():
         raise ValueError(f"{images_path} does not exist")
 
     densities_path = os.path.join(
-        root_path, 
+        root_dir, 
         camera_name, 
         f'{camera_name}_pengbot', 
         f'{camera_name}{camera_collection_id}_pengbot'
@@ -57,7 +57,7 @@ def parse_cli_args():
     if not os.path.exists(densities_path):
         densities_path = None
         locations_path = os.path.join(
-                root_path, 
+                root_dir, 
                 camera_name, 
                 f'{camera_name}_metadata', 
                 f'{camera_name}{camera_collection_id}_locations.csv'
@@ -66,13 +66,13 @@ def parse_cli_args():
             raise ValueError(f"Either {densities_path} or {locations_path} must exist")
         if 'location_mask_size' not in config:
                 warnings.warn("'location_mask_size' not specified, defaulting to 100", UserWarning)
-                config['location_mask_size'] = 100
+                location_mask_size = 100
     else:
         locations_path = None
         location_mask_size = None
 
     metadata_path = os.path.join(
-        root_path, 
+        root_dir, 
         camera_name, 
         f'{camera_name}_metadata', 
         f'{camera_name}{camera_collection_id}_metadata'
@@ -104,13 +104,15 @@ def parse_cli_args():
     if not os.path.exists(nest_reference_image_path):
         raise ValueError(f"{nest_reference_image_path} does not exist")
    
-    nest_reference_density_path = os.path.join(
-            densities_path,
-            f'{camera_name}{camera_collection_id}_{nest_reference_image_id}.mat'
-        )
-
-    if not os.path.exists(nest_reference_density_path):
-        raise ValueError(f"{nest_reference_density_path} does not exist")
+    if densities_path is not None:
+        nest_reference_density_path = os.path.join(
+                densities_path,
+                f'{camera_name}{camera_collection_id}_{nest_reference_image_id}.mat'
+            )
+        if not os.path.exists(nest_reference_density_path):
+            raise ValueError(f"{nest_reference_density_path} does not exist")
+    else:
+        nest_reference_density_path = None
     
     if 'fill_missing' not in config:
         warnings.warn("'fill_missing' not specified, defaulting to True", UserWarning)
@@ -120,6 +122,10 @@ def parse_cli_args():
         warnings.warn("'camera_info_size' not specified, defaulting to 50", UserWarning)
         config['camera_info_size'] = 50
 
+    if 'interactive' not in config:
+        config['interactive'] = False
+    
+    config['config_path'] = config_arg.config
     config['images'] = images_path
     config['densities'] = densities_path
     config['locations'] = locations_path
@@ -141,7 +147,9 @@ def main():
         locations_path=config['locations'],
         bounding_box_size=config['location_mask_size'],
         camera_info_size=config['camera_info_size'],
-        fill_missing=config['fill_missing']
+        fill_missing=config['fill_missing'],
+        interactive=config['interactive'],
+        config_path=config['config_path']
     )
 
     ref_im_unit = folder_processor.im_unit_from_paths(

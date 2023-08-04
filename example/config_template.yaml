@@ -1,7 +1,7 @@
 # pengbot-aligner config file template
 
 # Images, densities, nests and metadata are expected to be under the path
-# {root_path}/{camera_name}/
+# {root_dir}/{camera_name}/
 
 # This path is expected to contain the folowing folders:
 # - '{camera_name}_renamed' containing images with .JPG extesion (required)
@@ -9,7 +9,7 @@
 # - '{camera_name}_locations' containing x,y locations with .png extension (optional)
 # - '{camera_name}_metadata' containing metadata with .csv extension (optional)
 # A folder with nest diagrams, {camera_name}_nests, will be created automatically
-root_path: ''  # e.g. 'C:\Penguinwatch_Timelapse'
+root_dir: ''  # e.g. 'C:\Penguinwatch_Timelapse'
 camera_name: '' # e.g. 'AITCb'
 
 # The images and density maps folder are expected to be organized by camera collection, e.g., AITCb2014b
@@ -38,3 +38,6 @@ fill_missing: True
 
 # Width in pixels of the camera information bands 
 camera_info_size: 50
+
+# Interactive mode shows the images and allows to manually accept or reject the alignment
+interactive: True
