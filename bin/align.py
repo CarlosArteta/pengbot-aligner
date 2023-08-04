@@ -66,7 +66,7 @@ def parse_cli_args():
             raise ValueError(f"Either {densities_path} or {locations_path} must exist")
         if 'location_mask_size' not in config:
                 warnings.warn("'location_mask_size' not specified, defaulting to 100", UserWarning)
-                config['location_mask_size'] = 100
+                location_mask_size = 100
     else:
         locations_path = None
         location_mask_size = None
@@ -104,13 +104,15 @@ def parse_cli_args():
     if not os.path.exists(nest_reference_image_path):
         raise ValueError(f"{nest_reference_image_path} does not exist")
    
-    nest_reference_density_path = os.path.join(
-            densities_path,
-            f'{camera_name}{camera_collection_id}_{nest_reference_image_id}.mat'
-        )
-
-    if not os.path.exists(nest_reference_density_path):
-        raise ValueError(f"{nest_reference_density_path} does not exist")
+    if densities_path is not None:
+        nest_reference_density_path = os.path.join(
+                densities_path,
+                f'{camera_name}{camera_collection_id}_{nest_reference_image_id}.mat'
+            )
+        if not os.path.exists(nest_reference_density_path):
+            raise ValueError(f"{nest_reference_density_path} does not exist")
+    else:
+        nest_reference_density_path = None
     
     if 'fill_missing' not in config:
         warnings.warn("'fill_missing' not specified, defaulting to True", UserWarning)
