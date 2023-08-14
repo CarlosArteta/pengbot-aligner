@@ -234,12 +234,11 @@ class FolderProcessor:
         # convert image to RGB format
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
-        # resize image to fit screen
-        im = cv2.resize(im, (0, 0), fx=0.5, fy=0.5)
-
         # show using tkinter
         root = tk.Tk()
         root.title(im_path)
+        resize_factor = root.winfo_screenwidth() * 0.6 / im.shape[1]
+        im = cv2.resize(im, (0, 0), fx=resize_factor, fy=resize_factor)
         im = Image.fromarray(im)
         img = ImageTk.PhotoImage(image=im)
         panel = tk.Label(root, image=img)
