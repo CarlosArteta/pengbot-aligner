@@ -26,12 +26,15 @@ class FolderProcessor:
             bounding_box_size=100,
             fill_missing=True,
             interactive=False,
-            config_path=None
+            config_path=None,
+            species = ''
     ):
         self.images_dir = images_dir
         self.densities_dir = densities_dir
         self.locations_path = locations_path
-        self.output_dir = images_dir.replace('renamed', 'nests')
+        self.output_dir = images_dir.replace("renamed", "nests")
+        if species != '':
+            self.output_dir = f'{self.output_dir}_{species}'
         self.im_unit_cache = utils.ImCache()
         self.im_ext = im_ext
         self.density_ext = density_ext
@@ -318,6 +321,7 @@ class FolderProcessor:
             r += f'Densities: {len(self.densities)} in {self.densities_dir} \n'
         if self.locations is not None:
             r += f'Locations: {len(self.locations)} in {self.locations_path} \n'
+        r += f'Output: {self.output_dir} \n'
         r += f'Image cache size: {self.im_unit_cache.cache_size} image units \n'
         # r += f'Nest diagram: {self.nest_reference_diagram} \n'
         # r += f'Nest reference images: {self.nest_reference_image} \n'

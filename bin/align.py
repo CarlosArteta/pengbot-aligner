@@ -103,6 +103,9 @@ def parse_cli_args():
     
     if not os.path.exists(nest_reference_image_path):
         raise ValueError(f"{nest_reference_image_path} does not exist")
+    
+    if 'species' not in config:
+        config['species'] = ''
    
     if densities_path is not None:
         nest_reference_density_path = os.path.join(
@@ -149,7 +152,8 @@ def main():
         camera_info_size=config['camera_info_size'],
         fill_missing=config['fill_missing'],
         interactive=config['interactive'],
-        config_path=config['config_path']
+        config_path=config['config_path'],
+        species=config['species']
     )
 
     ref_im_unit = folder_processor.im_unit_from_paths(

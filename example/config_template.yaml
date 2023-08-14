@@ -8,7 +8,7 @@
 # - '{camera_name}_pengbot' containing density maps with .mat extension (optional)
 # - '{camera_name}_locations' containing x,y locations with .png extension (optional)
 # - '{camera_name}_metadata' containing metadata with .csv extension (optional)
-# A folder with nest diagrams, {camera_name}_nests, will be created automatically
+# A folder with nest diagrams, {camera_name}_nests_{species}, will be created automatically
 root_dir: ''  # e.g. 'C:\Penguinwatch_Timelapse'
 camera_name: '' # e.g. 'AITCb'
 
@@ -22,6 +22,9 @@ camera_collection_id: ''  # e.g. 2014b
 # Location CSV files are expected to have columns "cluster_x", "cluster_y", "image_id"
 # This is needed when density maps are not available
 # If provided, locations are used instead of density maps as masks for image alignment
+
+# Nest species
+species: '' # e.g. 'gentoo'
 
 # Full path to png file with diagram of nests
 nest_diagram: ''
