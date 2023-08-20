@@ -34,6 +34,8 @@ nest_reference_image_id: '' # e.g. 0001
 
 # Only process certain months in the camera collection
 # If empty, all months are processed
+# The month information is extracted from the field "datetime" in the metadata file
+# The datetime format is expected to be "YYYY:MM:DD HH:MM:SS"
 months_to_process: [] # e.g. [1, 2, 3]
 
 # Attempt to fill nest diagrams for images for which alignment failed

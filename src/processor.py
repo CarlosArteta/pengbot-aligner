@@ -19,6 +19,7 @@ class FolderProcessor:
             self,
             images_dir,
             densities_dir=None,
+            metadata_path=None,
             locations_path=None,
             im_ext='.JPG',
             density_ext='.mat',
@@ -27,10 +28,12 @@ class FolderProcessor:
             fill_missing=True,
             interactive=False,
             config_path=None,
-            species = ''
+            species = '',
+            months_to_process = None
     ):
         self.images_dir = images_dir
         self.densities_dir = densities_dir
+        self.metadata_path = metadata_path
         self.locations_path = locations_path
         self.output_dir = images_dir.replace("renamed", "nests")
         if species != '':
@@ -61,11 +64,20 @@ class FolderProcessor:
         else:
             self.alignment_record = pd.DataFrame(columns=['image', 'alignment'])
         self.config_path = config_path
+        self.months_to_process = None if len(months_to_process) == 0 else months_to_process
 
     def process_folder(self):
         os.makedirs(self.output_dir, exist_ok=True)
 
+        if self.months_to_process is not None:
+            metadata = self.get_metadata(self.metadata_path)
+            metadata = metadata[metadata['month'].isin(self.months_to_process)]
+
         for im_name in tqdm(self.images):
+            if self.months_to_process is not None and im_name not in metadata['im_name'].values:
+                tqdm.write(f'{im_name} outside months to process. Skipping...')
+                continue
+
             output_fn = im_name.replace(self.im_ext, '.png')
             output_fp = os.path.join(self.output_dir, output_fn)
             if os.path.exists(output_fp):
@@ -313,6 +325,17 @@ class FolderProcessor:
             usecols=[ 'image_id', 'cluster_x', 'cluster_y']
             )
         return locations
+    
+    @staticmethod
+    def get_metadata(metadata_path):
+        """
+        Parse metadata file
+        """
+        metadata = pd.read_csv(metadata_path)
+        metadata['date'] = pd.to_datetime(metadata['datetime'], format='%Y:%m:%d %H:%M:%S')
+        metadata['month'] = metadata['date'].dt.month
+        metadata['im_name'] = metadata['imageid'].apply(lambda x: x.split('/')[-1])
+        return metadata
 
     def __repr__(self):
         r = '\n === Folder Processor === \n'

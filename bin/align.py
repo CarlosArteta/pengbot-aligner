@@ -75,16 +75,14 @@ def parse_cli_args():
         root_dir, 
         camera_name, 
         f'{camera_name}_metadata', 
-        f'{camera_name}{camera_collection_id}_metadata'
+        f'{camera_name}{camera_collection_id}_metadata.csv'
     )
 
     if 'months_to_process' not in config:
         config['months_to_process'] = []
 
-    months_to_process = config['months_to_process']
-
-    if not os.path.exists(metadata_path) and len(months_to_process) > 0:
-        raise ValueError(f"Months {months_to_process} requested but {metadata_path} does not exist")
+    if not os.path.exists(metadata_path) and len(config['months_to_process']) > 0:
+        raise ValueError(f"Months {config['months_to_process']} requested but {metadata_path} does not exist")
   
     if 'nest_diagram' not in config:
         raise ValueError("'nest_diagram' must be specified")
@@ -147,13 +145,15 @@ def main():
     folder_processor = processor.FolderProcessor(
         images_dir=config['images'],
         densities_dir=config['densities'],
+        metadata_path=config['metadata'],
         locations_path=config['locations'],
         bounding_box_size=config['location_mask_size'],
         camera_info_size=config['camera_info_size'],
         fill_missing=config['fill_missing'],
         interactive=config['interactive'],
         config_path=config['config_path'],
-        species=config['species']
+        species=config['species'],
+        months_to_process=config['months_to_process']
     )
 
     ref_im_unit = folder_processor.im_unit_from_paths(
