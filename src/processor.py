@@ -29,7 +29,8 @@ class FolderProcessor:
             interactive=False,
             config_path=None,
             species = '',
-            months_to_process = None
+            months_to_process = None,
+            keep_n_size = 10
     ):
         self.images_dir = images_dir
         self.densities_dir = densities_dir
@@ -65,6 +66,8 @@ class FolderProcessor:
             self.alignment_record = pd.DataFrame(columns=['image', 'alignment'])
         self.config_path = config_path
         self.months_to_process = None if len(months_to_process) == 0 else months_to_process
+        self.keep_n_size = keep_n_size
+        self.keep_next_n_count = False
 
     def process_folder(self):
         os.makedirs(self.output_dir, exist_ok=True)
@@ -74,16 +77,26 @@ class FolderProcessor:
             metadata = metadata[metadata['month'].isin(self.months_to_process)]
 
         for im_name in tqdm(self.images):
+
             if self.months_to_process is not None and im_name not in metadata['im_name'].values:
                 tqdm.write(f'{im_name} outside months to process. Skipping...')
                 continue
 
             output_fn = im_name.replace(self.im_ext, '.png')
             output_fp = os.path.join(self.output_dir, output_fn)
+
+            if self.keep_next_n_count > 0:
+                tqdm.write(f'{im_name} skipped in batch')
+                cv2.imwrite(output_fp, ref_unit.diagram)
+                self.update_alignment_record(im_name, 'keep_next_n')
+                self.keep_next_n_count -= 1
+                continue
+
             if os.path.exists(output_fp):
                 tqdm.write(f'Output for {im_name} exists. Skipping...')
                 self.update_alignment_record(im_name, 'existed')
                 continue
+
             target_im_path = os.path.join(self.images_dir, im_name)
             if self.densities_dir is not None:
                 target_density_path = os.path.join(self.densities_dir, im_name.replace(self.im_ext, self.density_ext))
@@ -123,6 +136,10 @@ class FolderProcessor:
                     elif action == 'keep_other':
                         cv2.imwrite(output_fp, ref_unit.diagram)
                         self.update_alignment_record(im_name, 'keep_other')
+                    elif action == 'keep_next_n':
+                        cv2.imwrite(output_fp, ref_unit.diagram)
+                        self.update_alignment_record(im_name, 'keep_next_n')
+                        self.keep_next_n_count = self.keep_n_size - 1
                     elif action == 'ignore_blurry':
                         blank_diagram = np.zeros_like(ref_unit.diagram)
                         cv2.imwrite(output_fp, blank_diagram)
@@ -203,7 +220,7 @@ class FolderProcessor:
      
 
     def get_user_action(self, im_path, diagram):
-        """Get user to input what to do what failed alignments."""
+        """Get user to input what to do with failed alignments"""
         action = None
         def keep_snow():
             nonlocal action
@@ -225,6 +242,10 @@ class FolderProcessor:
             nonlocal action
             action = 'redraw'
             root.destroy()
+        def keep_next_n():
+            nonlocal action
+            action = 'keep_next_n'
+            root.destroy()
         def key_press(event):
             key = event.char
             if key == 's':
@@ -237,6 +258,8 @@ class FolderProcessor:
                 ignore_other()
             elif key == 'r':
                 redraw()
+            elif key == 'n':
+                keep_next_n()
             else:
                 print(f'Key {key} not recognized')             
         
@@ -267,6 +290,8 @@ class FolderProcessor:
         keep_snow_button.pack(side="left", fill="both", expand="yes")
         keep_other_button = tk.Button(button_frame, text="(o) Keep diagram (other)", command=keep_other)
         keep_other_button.pack(side="left", fill="both", expand="yes")
+        keep_next_n_button = tk.Button(button_frame, text="(n) Keep next n", command=keep_next_n)
+        keep_next_n_button.pack(side="left", fill="both", expand="yes")
         ignore_blurry_button = tk.Button(button_frame, text="(b) Ignore (blurry)", command=ignore_blurry)
         ignore_blurry_button.pack(side="left", fill="both", expand="yes")
         ignore_other_button = tk.Button(button_frame, text="(i) Ignore (other)", command=ignore_other)
