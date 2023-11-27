@@ -125,6 +125,9 @@ def parse_cli_args():
 
     if 'interactive' not in config:
         config['interactive'] = False
+
+    if 'keep_next_n_step' not in config:
+        config['keep_next_n_step'] = 10
     
     config['config_path'] = config_arg.config
     config['images'] = images_path
@@ -153,7 +156,8 @@ def main():
         interactive=config['interactive'],
         config_path=config['config_path'],
         species=config['species'],
-        months_to_process=config['months_to_process']
+        months_to_process=config['months_to_process'],
+        keep_n_size=config['keep_next_n_step']
     )
 
     ref_im_unit = folder_processor.im_unit_from_paths(

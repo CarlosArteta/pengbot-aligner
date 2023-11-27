@@ -81,18 +81,18 @@ class FolderProcessor:
 
         for im_name in tqdm(self.images):
 
-            if self.months_to_process is not None and im_name not in metadata['im_name'].values:
-                tqdm.write(f'{im_name} outside months to process. Skipping...')
-                continue
-
             output_fn = im_name.replace(self.im_ext, '.png')
             output_fp = os.path.join(self.output_dir, output_fn)
 
             if self.keep_next_n_count > 0:
-                tqdm.write(f'{im_name} skipped in batch')
+                tqdm.write(f'{im_name} skipped in batch of {self.keep_n_size}')
                 cv2.imwrite(output_fp, ref_unit.diagram)
-                self.update_alignment_record(im_name, 'keep_next_n')
+                self.update_alignment_record(im_name, f'keep_next_{self.keep_n_size}')
                 self.keep_next_n_count -= 1
+                continue
+
+            if self.months_to_process is not None and im_name not in metadata['im_name'].values:
+                tqdm.write(f'{im_name} outside months to process. Skipping...')
                 continue
 
             if os.path.exists(output_fp):
@@ -141,7 +141,7 @@ class FolderProcessor:
                         self.update_alignment_record(im_name, 'keep_other')
                     elif action == 'keep_next_n':
                         cv2.imwrite(output_fp, ref_unit.diagram)
-                        self.update_alignment_record(im_name, 'keep_next_n')
+                        self.update_alignment_record(im_name, f'keep_next_{self.keep_n_size}')
                         self.keep_next_n_count = self.keep_n_size - 1
                     elif action == 'ignore_blurry':
                         blank_diagram = np.zeros_like(ref_unit.diagram)
@@ -293,7 +293,7 @@ class FolderProcessor:
         keep_snow_button.pack(side="left", fill="both", expand="yes")
         keep_other_button = tk.Button(button_frame, text="(o) Keep diagram (other)", command=keep_other)
         keep_other_button.pack(side="left", fill="both", expand="yes")
-        keep_next_n_button = tk.Button(button_frame, text="(n) Keep next n", command=keep_next_n)
+        keep_next_n_button = tk.Button(button_frame, text=f"(n) Keep next {self.keep_n_size}", command=keep_next_n)
         keep_next_n_button.pack(side="left", fill="both", expand="yes")
         ignore_blurry_button = tk.Button(button_frame, text="(b) Ignore (blurry)", command=ignore_blurry)
         ignore_blurry_button.pack(side="left", fill="both", expand="yes")

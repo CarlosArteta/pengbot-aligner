@@ -46,3 +46,7 @@ camera_info_size: 50
 
 # Interactive mode shows the images and allows to manually accept or reject the alignment
 interactive: True
+
+# Step size for 'keep next n' UI functionality. For example, if keep_next_n_step is 10, then
+# using it will copy the current nest diagram for the next 10 images
+keep_next_n_step: 10
