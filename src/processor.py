@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 import cv2
 import tkinter as tk
+from datetime import datetime
 from PIL import ImageTk, Image
 from . import utils, aligner
 
@@ -59,7 +60,9 @@ class FolderProcessor:
         self.filling_tolerance_scale = 0.03
         self.filling_tolerance_translation = 5
         self.interactive = interactive
-        self.alignment_record_path = os.path.join(self.output_dir, 'alignment_record.csv')
+        self.alignment_record_path = os.path.join(
+            self.output_dir, 
+            f'alignment_record_{datetime.today().strftime("%Y-%m-%d")}.csv')
         if os.path.exists(self.alignment_record_path):
             self.alignment_record = pd.read_csv(self.alignment_record_path)
         else:
